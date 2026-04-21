@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我們的故事 💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;1,400&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════════
+   CONFIG BANNER  (shows until CLIENT_ID is set)
+══════════════════════════════════════════════ */
+#configBanner {
+  background: #c97b7b; color: #fff;
+  padding: 14px 24px; text-align: center;
+  font-family: 'Noto Serif TC', serif; font-size: 0.9rem;
+  line-height: 1.7;
+}
+#configBanner a { color: #ffe0e0; }
+#configBanner code {
+  background: rgba(0,0,0,0.2); padding: 2px 6px;
+  border-radius: 4px; font-size: 0.85em;
+}
+
+/* ══════════════════════════════════════════════
+   TOKENS & RESET
+══════════════════════════════════════════════ */
+:root {
+  --cream:    #fdf6f0;
+  --blush:    #f5c8c8;
+  --rose:     #e8a0a0;
+  --deep:     #c97b7b;
+  --mauve:    #d4a5a5;
+  --petal:    #fde8e8;
+  --text:     #5a3e3e;
+  --muted:    #9b7272;
+  --white:    #fffafa;
+  --sidebar:  260px;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--cream);
+  color: var(--text);
+  font-family: 'Noto Serif TC', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {                          /* grain */
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity:.5;
+}
+
+/* ══════════════════════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════════════════════ */
+#loginScreen {
+  min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:28px; padding:40px 20px;
+  text-align:center;
+}
+.login-title {
+  font-family:'Dancing Script',cursive; font-size:clamp(2.8rem,8vw,5rem);
+  color:var(--deep); line-height:1.1;
+}
+.login-sub {
+  font-family:'Playfair Display',serif; font-style:italic;
+  color:var(--muted); font-size:1.1rem; margin-top:-16px;
+}
+.petals-bg { font-size:2.5rem; letter-spacing:.4em; opacity:.6; }
+.btn-google {
+  display:inline-flex; align-items:center; gap:12px;
+  padding:14px 32px; border-radius:50px;
+  background:var(--deep); color:#fff; border:none;
+  font-family:'Dancing Script',cursive; font-size:1.35rem;
+  cursor:pointer; transition:all .25s;
+  box-shadow:0 8px 30px rgba(201,123,123,.35);
+}
+.btn-google:hover { background:var(--rose); transform:translateY(-2px); box-shadow:0 14px 40px rgba(201,123,123,.4); }
+.btn-google img { width:22px; height:22px; }
+.login-note { font-size:.8rem; color:var(--muted); max-width:340px; line-height:1.6; }
+
+/* ══════════════════════════════════════════════
+   APP SHELL
+══════════════════════════════════════════════ */
+#app { display:none; min-height:100vh; }
+
+/* ── Sidebar ── */
+#sidebar {
+  position:fixed; top:0; left:0; bottom:0; width:var(--sidebar);
+  background:var(--white);
+  border-right:1px solid var(--blush);
+  display:flex; flex-direction:column;
+  z-index:200;
+  box-shadow:4px 0 20px rgba(201,123,123,.07);
+  transition: transform .3s;
+}
+.sidebar-header {
+  padding:28px 20px 20px;
+  border-bottom:1px solid var(--petal);
+}
+.sidebar-logo {
+  font-family:'Dancing Script',cursive; font-size:1.55rem;
+  color:var(--deep); line-height:1.2;
+}
+.sidebar-logo span { display:block; font-size:.78rem; color:var(--muted); font-family:'Noto Serif TC',serif; }
+.user-chip {
+  margin-top:12px; display:flex; align-items:center; gap:8px;
+  font-size:.78rem; color:var(--muted);
+}
+.user-chip img { width:26px; height:26px; border-radius:50%; border:1.5px solid var(--blush); }
+
+/* Albums list */
+.albums-scroll { flex:1; overflow-y:auto; padding:16px 12px; }
+.section-label {
+  font-size:.7rem; letter-spacing:.12em; color:var(--muted);
+  text-transform:uppercase; padding:0 8px; margin-bottom:8px;
+}
+.album-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:12px; cursor:pointer;
+  font-size:.9rem; transition:all .2s;
+  margin-bottom:2px;
+}
+.album-item:hover { background:var(--petal); }
+.album-item.active { background:var(--blush); color:var(--deep); font-weight:500; }
+.album-item .icon { font-size:1.1rem; flex-shrink:0; }
+.album-item .name { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.album-item .count { font-size:.72rem; color:var(--muted); }
+
+.btn-new-album {
+  margin:8px 12px 4px;
+  display:flex; align-items:center; gap:8px;
+  padding:10px 14px; border-radius:12px;
+  border:1.5px dashed var(--blush); background:none;
+  color:var(--deep); font-family:'Noto Serif TC',serif;
+  font-size:.85rem; cursor:pointer; transition:all .2s; width:calc(100% - 24px);
+}
+.btn-new-album:hover { background:var(--petal); border-color:var(--rose); }
+
+/* Sidebar footer */
+.sidebar-footer {
+  padding:16px;
+  border-top:1px solid var(--petal);
+}
+.btn-signout {
+  width:100%; padding:10px; border-radius:10px;
+  border:1px solid var(--blush); background:none;
+  color:var(--muted); font-size:.82rem;
+  cursor:pointer; transition:all .2s;
+  font-family:'Noto Serif TC',serif;
+}
+.btn-signout:hover { background:var(--petal); color:var(--deep); }
+
+/* ── Main content ── */
+#main {
+  margin-left:var(--sidebar);
+  min-height:100vh;
+  display:flex; flex-direction:column;
+}
+
+.topbar {
+  display:flex; align-items:center; gap:16px;
+  padding:22px 32px 18px;
+  border-bottom:1px solid var(--petal);
+  background:var(--cream);
+  position:sticky; top:0; z-index:100;
+}
+.topbar-title {
+  font-family:'Dancing Script',cursive; font-size:1.8rem;
+  color:var(--deep); flex:1;
+}
+.topbar-sub { font-size:.78rem; color:var(--muted); }
+
+.btn-upload {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 22px; border-radius:50px;
+  background:var(--deep); color:#fff; border:none;
+  font-family:'Dancing Script',cursive; font-size:1.1rem;
+  cursor:pointer; transition:all .2s;
+  box-shadow:0 4px 16px rgba(201,123,123,.3);
+  position:relative;
+}
+.btn-upload:hover { background:var(--rose); transform:translateY(-1px); }
+.btn-upload input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+/* ── Drop zone overlay ── */
+#dropOverlay {
+  position:fixed; inset:0; z-index:5000;
+  background:rgba(201,123,123,.18);
+  backdrop-filter:blur(4px);
+  display:none; align-items:center; justify-content:center;
+  pointer-events:none;
+}
+#dropOverlay.show { display:flex; }
+.drop-box {
+  background:var(--white); border:3px dashed var(--deep);
+  border-radius:28px; padding:60px 80px; text-align:center;
+  font-family:'Dancing Script',cursive; color:var(--deep);
+  font-size:1.8rem;
+}
+.drop-box .drop-icon { font-size:3.5rem; margin-bottom:10px; }
+
+/* ── Content area ── */
+.content { flex:1; padding:28px 32px 60px; }
+
+/* Stats row */
+.stats-row {
+  display:flex; gap:16px; margin-bottom:28px; flex-wrap:wrap;
+}
+.stat-chip {
+  background:var(--white); border:1px solid var(--blush);
+  border-radius:12px; padding:10px 18px;
+  font-size:.82rem; color:var(--muted);
+}
+.stat-chip strong { font-family:'Dancing Script',cursive; font-size:1.3rem; color:var(--deep); display:block; }
+
+/* ── Grid ── */
+.media-grid {
+  columns:4 200px; column-gap:14px;
+}
+.media-card {
+  break-inside:avoid; margin-bottom:14px;
+  background:var(--white); border-radius:16px; overflow:hidden;
+  box-shadow:0 4px 16px rgba(201,123,123,.1);
+  transition:all .32s cubic-bezier(.34,1.56,.64,1);
+  cursor:pointer; position:relative;
+  animation:fadeUp .5s ease both;
+}
+.media-card:hover {
+  transform:translateY(-5px) rotate(.4deg);
+  box-shadow:0 14px 36px rgba(201,123,123,.22);
+}
+.media-card img, .media-card video {
+  width:100%; display:block; object-fit:cover;
+}
+.media-card .video-thumb {
+  position:relative;
+}
+.media-card .play-badge {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(90,62,62,.3);
+  font-size:2.2rem; opacity:0; transition:opacity .2s;
+}
+.media-card:hover .play-badge { opacity:1; }
+.media-info { padding:10px 12px 12px; }
+.media-info .caption {
+  font-family:'Dancing Script',cursive; font-size:1.05rem;
+  color:var(--deep); margin-bottom:2px;
+}
+.media-info .meta { font-size:.72rem; color:var(--muted); }
+.card-actions {
+  position:absolute; top:8px; right:8px;
+  display:flex; gap:6px; opacity:0; transition:opacity .2s;
+}
+.media-card:hover .card-actions { opacity:1; }
+.card-btn {
+  background:rgba(255,255,255,.92); border:none;
+  border-radius:50%; width:28px; height:28px;
+  font-size:.8rem; cursor:pointer; display:flex;
+  align-items:center; justify-content:center;
+  color:var(--deep); transition:background .15s;
+}
+.card-btn:hover { background:var(--petal); }
+
+/* ── Empty ── */
+.empty-state {
+  text-align:center; padding:80px 20px;
+  color:var(--muted);
+}
+.empty-state .icon { font-size:4rem; margin-bottom:16px; }
+.empty-state h3 { font-family:'Dancing Script',cursive; font-size:1.8rem; color:var(--rose); margin-bottom:8px; }
+.empty-state p { font-size:.88rem; }
+
+/* ── Upload progress ── */
+#progressBar {
+  position:fixed; bottom:0; left:var(--sidebar); right:0;
+  background:var(--white); border-top:1px solid var(--blush);
+  padding:14px 32px; display:none; z-index:300;
+  align-items:center; gap:16px;
+}
+#progressBar.show { display:flex; }
+.progress-track {
+  flex:1; height:6px; background:var(--petal);
+  border-radius:3px; overflow:hidden;
+}
+.progress-fill {
+  height:100%; background:var(--deep);
+  border-radius:3px; transition:width .3s;
+}
+#progressLabel { font-size:.82rem; color:var(--muted); white-space:nowrap; }
+
+/* ── Modals ── */
+.overlay {
+  position:fixed; inset:0; background:rgba(90,62,62,.45);
+  backdrop-filter:blur(8px); z-index:1000;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.overlay.open { display:flex; animation:fadeIn .25s ease; }
+
+/* Caption modal */
+.modal-box {
+  background:var(--white); border-radius:24px; padding:36px 32px;
+  max-width:440px; width:100%;
+  box-shadow:0 30px 70px rgba(201,123,123,.28);
+  animation:slideUp .3s ease;
+}
+.modal-box h2 { font-family:'Dancing Script',cursive; font-size:1.75rem; color:var(--deep); margin-bottom:20px; text-align:center; }
+.modal-box label { display:block; font-size:.8rem; color:var(--muted); margin-bottom:5px; margin-top:12px; }
+.modal-box input, .modal-box textarea, .modal-box select {
+  width:100%; padding:11px 14px; border:1.5px solid var(--blush);
+  border-radius:11px; font-family:'Noto Serif TC',serif; font-size:.93rem;
+  color:var(--text); background:var(--cream); outline:none;
+  transition:border-color .2s; resize:none;
+}
+.modal-box input:focus, .modal-box textarea:focus { border-color:var(--deep); }
+.modal-actions { display:flex; gap:10px; margin-top:20px; }
+.btn-primary {
+  flex:1; padding:13px; background:var(--deep); color:#fff;
+  border:none; border-radius:11px;
+  font-family:'Dancing Script',cursive; font-size:1.15rem;
+  cursor:pointer; transition:all .2s;
+}
+.btn-primary:hover { background:var(--rose); }
+.btn-secondary {
+  padding:13px 18px; background:none; color:var(--muted);
+  border:1.5px solid var(--blush); border-radius:11px;
+  font-family:'Noto Serif TC',serif; cursor:pointer; transition:all .2s;
+}
+.btn-secondary:hover { background:var(--petal); }
+
+/* Lightbox */
+#lightbox {
+  position:fixed; inset:0; background:rgba(40,20,20,.93);
+  z-index:2000; display:none; flex-direction:column;
+  align-items:center; justify-content:center; gap:16px;
+  padding:20px;
+}
+#lightbox.open { display:flex; animation:fadeIn .25s ease; }
+#lbMedia { max-width:88vw; max-height:72vh; border-radius:14px; object-fit:contain;
+  box-shadow:0 30px 80px rgba(0,0,0,.5); }
+#lbVideo { max-width:88vw; max-height:72vh; border-radius:14px; outline:none; }
+.lb-caption { font-family:'Dancing Script',cursive; font-size:1.45rem; color:var(--blush); text-align:center; }
+.lb-meta { font-size:.78rem; color:var(--mauve); text-align:center; }
+.lb-close {
+  position:absolute; top:20px; right:24px;
+  color:#fff; font-size:1.7rem; background:none; border:none;
+  cursor:pointer; opacity:.7; transition:opacity .2s;
+}
+.lb-close:hover { opacity:1; }
+.lb-nav {
+  position:absolute; top:50%; transform:translateY(-50%);
+  background:rgba(255,255,255,.15); border:none; color:#fff;
+  font-size:1.5rem; width:46px; height:46px; border-radius:50%;
+  cursor:pointer; transition:background .2s;
+  display:flex; align-items:center; justify-content:center;
+}
+.lb-nav:hover { background:rgba(255,255,255,.28); }
+.lb-prev { left:14px; } .lb-next { right:14px; }
+
+/* New album modal */
+#newAlbumModal .modal-box { max-width:380px; }
+
+/* Toast */
+#toast {
+  position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--deep); color:#fff; padding:12px 24px; border-radius:50px;
+  font-size:.88rem; opacity:0; transition:all .3s; pointer-events:none; z-index:9000;
+  white-space:nowrap;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Animations */
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes slideUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+/* Floating petals */
+.petal { position:fixed; pointer-events:none; opacity:0; animation:floatPetal linear infinite; z-index:1; }
+@keyframes floatPetal {
+  0%   { transform:translateY(-20px) rotate(0deg);   opacity:0; }
+  10%  { opacity:.5; }
+  90%  { opacity:.3; }
+  100% { transform:translateY(105vh) rotate(360deg); opacity:0; }
+}
+
+/* Mobile */
+@media(max-width:768px) {
+  :root { --sidebar:0px; }
+  #sidebar { transform:translateX(-260px); width:260px; }
+  #sidebar.open { transform:translateX(0); }
+  #main { margin-left:0; }
+  .topbar { padding:16px 20px; }
+  .content { padding:20px 16px 80px; }
+  .media-grid { columns:2 150px; }
+  #progressBar { left:0; }
+  .hamburger { display:flex !important; }
+}
+.hamburger {
+  display:none; flex-direction:column; gap:5px;
+  background:none; border:none; cursor:pointer; padding:4px;
+}
+.hamburger span { display:block; width:22px; height:2px; background:var(--deep); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<!-- CONFIG BANNER — hidden once CLIENT_ID is set -->
+<div id="configBanner">
+  ⚙️ 請先設定你的 Google OAuth Client ID：找到程式碼頂端的 <code>YOUR_GOOGLE_CLIENT_ID</code> 並替換成你的 Client ID。
+  <a href="https://console.cloud.google.com/" target="_blank">前往 Google Cloud Console →</a>
+</div>
+
+<!-- ── LOGIN ── -->
+<div id="loginScreen">
+  <div class="petals-bg">🌸 🌷 🌺</div>
+  <div class="login-title">我們的故事</div>
+  <div class="login-sub">A Private Collection of Sweet Memories</div>
+  <button class="btn-google" id="btnSignIn">
+    <svg width="22" height="22" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-9 20-20 0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.8-11.2-7l-6.6 5.1C9.6 39.7 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.5-2.6 4.6-4.8 6l6.2 5.2C40.6 35.9 44 30.4 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+    用 Google 帳號登入
+  </button>
+  <div class="login-note">登入後即可存取你的 Google Drive，所有照片和影片都會儲存在你自己的雲端硬碟中。</div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        我們的故事 💕
+        <span>My Private Album</span>
+      </div>
+      <div class="user-chip">
+        <img id="userAvatar" src="" alt="">
+        <span id="userName">Loading…</span>
+      </div>
+    </div>
+
+    <div class="albums-scroll" id="albumsList">
+      <div class="section-label">相簿</div>
+      <!-- injected by JS -->
+    </div>
+
+    <button class="btn-new-album" id="btnNewAlbum">＋ 新增相簿</button>
+
+    <div class="sidebar-footer">
+      <button class="btn-signout" id="btnSignOut">登出</button>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div id="main">
+    <div class="topbar">
+      <button class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </button>
+      <div>
+        <div class="topbar-title" id="topbarTitle">所有回憶</div>
+        <div class="topbar-sub" id="topbarSub"></div>
+      </div>
+      <button class="btn-upload" id="btnUpload">
+        🌸 上傳
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+      </button>
+    </div>
+
+    <div class="content">
+      <div class="stats-row" id="statsRow"></div>
+      <div class="media-grid" id="mediaGrid"></div>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div id="progressBar">
+    <span style="font-size:.9rem;color:var(--deep);">🌸 上傳中⋯</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span id="progressLabel">0 / 0</span>
+  </div>
+</div>
+
+<!-- Drop overlay -->
+<div id="dropOverlay">
+  <div class="drop-box">
+    <div class="drop-icon">🌸</div>
+    放開以上傳到這個相簿
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button class="lb-close" id="lbClose">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev">‹</button>
+  <img id="lbMedia" src="" alt="" style="display:none">
+  <video id="lbVideo" controls style="display:none"></video>
+  <button class="lb-nav lb-next" id="lbNext">›</button>
+  <div>
+    <div class="lb-caption" id="lbCaption"></div>
+    <div class="lb-meta" id="lbMeta"></div>
+  </div>
+</div>
+
+<!-- Caption modal -->
+<div class="overlay" id="captionOverlay">
+  <div class="modal-box">
+    <h2>為這個檔案加上標題 ♡</h2>
+    <img id="captionPreview" style="width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin-bottom:4px" src="" alt="">
+    <label>標題</label>
+    <input type="text" id="captionInput" placeholder="例：第一次看海 🌊" maxlength="60">
+    <label>日期</label>
+    <input type="date" id="dateInput">
+    <label>備忘（選填）</label>
+    <textarea id="noteInput" rows="2" placeholder="那天的天空很藍⋯⋯"></textarea>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="captionSkip">略過</button>
+      <button class="btn-primary" id="captionSave">儲存 💾</button>
+    </div>
+  </div>
+</div>
+
+<!-- New album modal -->
+<div class="overlay" id="newAlbumOverlay">
+  <div class="modal-box" style="max-width:380px">
+    <h2>建立新相簿 🌷</h2>
+    <label>相簿名稱</label>
+    <input type="text" id="albumNameInput" placeholder="例：京都之旅、第一個週年">
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-secondary" id="albumCancel">取消</button>
+      <button class="btn-primary" id="albumCreate">建立 ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Floating petals -->
+<div id="petalsContainer"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     GOOGLE API
+═══════════════════════════════════════════════════════ -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+// ║  ⚙️  CONFIG — replace with your own values              ║
+// ╚══════════════════════════════════════════════════════════╝
+const CLIENT_ID   = '147121891766-afmbrh8ms0p7crn5m901sdu9m650e3r9.apps.googleusercontent.com';   // ← 改這裡
+const SCOPES      = 'https://www.googleapis.com/auth/drive.file';
+const ROOT_FOLDER = 'OurMemories';             // Drive 根目錄名稱（可自訂）
+const APP_MIME    = 'application/vnd.google-apps.folder';
+
+// ── hide config banner if client id is set ──
+if (CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID') {
+  document.getElementById('configBanner').style.display = 'none';
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  STATE                                                   ║
+// ╚══════════════════════════════════════════════════════════╝
+let tokenClient, accessToken;
+let rootFolderId = null;
+let albums = [];           // [{id, name, fileCount}]
+let currentAlbumId = null; // null = show all
+let mediaItems = [];       // current view items
+let lbIndex   = 0;
+let pendingUploads = [];   // queue for caption modal
+let pendingIdx = 0;
+let pendingAlbumId = null;
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  PETALS                                                  ║
+// ╚══════════════════════════════════════════════════════════╝
+const PC = document.getElementById('petalsContainer');
+['🌸','🌺','🌷','💮','🪷'].forEach((e, i) => {
+  for (let j = 0; j < 3; j++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = e;
+    p.style.cssText = `left:${Math.random()*100}vw;font-size:${0.8+Math.random()*0.7}rem;animation-duration:${9+Math.random()*12}s;animation-delay:${Math.random()*20}s`;
+    PC.appendChild(p);
+  }
+});
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  AUTH                                                    ║
+// ╚══════════════════════════════════════════════════════════╝
+window.onload = () => {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { showToast('登入失敗 😢'); return; }
+      accessToken = resp.access_token;
+      await initApp();
+    }
+  });
+};
+
+document.getElementById('btnSignIn').addEventListener('click', () => {
+  if (CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
+    showToast('請先設定 Google Client ID ⚙️');
+    return;
+  }
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+});
+
+document.getElementById('btnSignOut').addEventListener('click', () => {
+  google.accounts.oauth2.revoke(accessToken, () => {
+    accessToken = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    showToast('已登出 👋');
+  });
+});
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  INIT                                                    ║
+// ╚══════════════════════════════════════════════════════════╝
+async function initApp() {
+  // Get user info
+  const me = await gFetch('https://www.googleapis.com/oauth2/v2/userinfo');
+  document.getElementById('userName').textContent = me.name || me.email;
+  document.getElementById('userAvatar').src = me.picture || '';
+
+  // Show app
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Ensure root folder
+  rootFolderId = await ensureFolder(ROOT_FOLDER, 'root');
+  await loadAlbums();
+  await renderView();
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  DRIVE HELPERS                                           ║
+// ╚══════════════════════════════════════════════════════════╝
+async function gFetch(url, opts = {}) {
+  const res = await fetch(url, {
+    ...opts,
+    headers: { Authorization: `Bearer ${accessToken}`, ...(opts.headers || {}) }
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function ensureFolder(name, parentId) {
+  // Check if exists
+  const q = `name='${name}' and mimeType='${APP_MIME}' and '${parentId}' in parents and trashed=false`;
+  const r = await gFetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`);
+  if (r.files.length) return r.files[0].id;
+  // Create
+  const c = await gFetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, mimeType: APP_MIME, parents: [parentId] })
+  });
+  return c.id;
+}
+
+async function loadAlbums() {
+  const q = `'${rootFolderId}' in parents and mimeType='${APP_MIME}' and trashed=false`;
+  const r = await gFetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&orderBy=name`);
+  albums = r.files;
+  renderSidebar();
+}
+
+async function listMedia(folderId) {
+  const q = `'${folderId}' in parents and trashed=false and (mimeType contains 'image/' or mimeType contains 'video/')`;
+  const r = await gFetch(
+    `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType,thumbnailLink,webContentLink,description,createdTime)&orderBy=createdTime desc&pageSize=200`
+  );
+  return r.files;
+}
+
+async function listAllMedia() {
+  // Get files from all albums + root folder
+  const allFolderIds = [rootFolderId, ...albums.map(a => a.id)];
+  const results = await Promise.all(allFolderIds.map(listMedia));
+  const seen = new Set();
+  const merged = [];
+  results.flat().forEach(f => { if (!seen.has(f.id)) { seen.add(f.id); merged.push(f); } });
+  merged.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+  return merged;
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  RENDER                                                  ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderSidebar() {
+  const list = document.getElementById('albumsList');
+  list.innerHTML = `<div class="section-label">相簿</div>`;
+
+  // All
+  const all = document.createElement('div');
+  all.className = 'album-item' + (currentAlbumId === null ? ' active' : '');
+  all.innerHTML = `<span class="icon">🏠</span><span class="name">所有回憶</span>`;
+  all.addEventListener('click', () => selectAlbum(null));
+  list.appendChild(all);
+
+  albums.forEach(album => {
+    const el = document.createElement('div');
+    el.className = 'album-item' + (currentAlbumId === album.id ? ' active' : '');
+    el.innerHTML = `<span class="icon">🌸</span><span class="name">${album.name}</span>
+      <button class="card-btn" style="opacity:1;background:none;width:20px;height:20px;font-size:.7rem" title="刪除相簿" data-id="${album.id}">✕</button>`;
+    el.addEventListener('click', (e) => {
+      if (e.target.dataset.id) { deleteAlbum(e.target.dataset.id, album.name); return; }
+      selectAlbum(album.id, album.name);
+    });
+    list.appendChild(el);
+  });
+}
+
+async function selectAlbum(id, name) {
+  currentAlbumId = id;
+  renderSidebar();
+  document.getElementById('topbarTitle').textContent = name || '所有回憶';
+  closeSidebar();
+  await renderView();
+}
+
+async function renderView() {
+  const grid = document.getElementById('mediaGrid');
+  const statsRow = document.getElementById('statsRow');
+  grid.innerHTML = `<div style="text-align:center;padding:60px;color:var(--muted)">🌸 載入中⋯</div>`;
+  statsRow.innerHTML = '';
+
+  try {
+    mediaItems = currentAlbumId ? await listMedia(currentAlbumId) : await listAllMedia();
+  } catch(e) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">😢</div><h3>無法載入</h3><p>${e.message}</p></div>`;
+    return;
+  }
+
+  const photos = mediaItems.filter(m => m.mimeType.startsWith('image/'));
+  const videos = mediaItems.filter(m => m.mimeType.startsWith('video/'));
+
+  statsRow.innerHTML = `
+    <div class="stat-chip"><strong>${photos.length}</strong>張照片</div>
+    <div class="stat-chip"><strong>${videos.length}</strong>部影片</div>
+    <div class="stat-chip"><strong>${albums.length}</strong>個相簿</div>
+  `;
+  document.getElementById('topbarSub').textContent = mediaItems.length ? `共 ${mediaItems.length} 個檔案` : '';
+
+  if (!mediaItems.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">💌</div><h3>這裡還沒有回憶</h3><p>點擊右上角「🌸 上傳」來加入第一張照片吧</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+  mediaItems.forEach((item, idx) => {
+    const isVideo = item.mimeType.startsWith('video/');
+    const card = document.createElement('div');
+    card.className = 'media-card';
+    card.style.animationDelay = (idx * 0.04) + 's';
+
+    // Parse description for caption/date/note
+    const meta = parseMeta(item.description || '');
+
+    if (isVideo) {
+      card.innerHTML = `
+        <div class="video-thumb">
+          <video src="${item.webContentLink}&access_token=${accessToken}" muted preload="metadata" style="width:100%;max-height:200px;object-fit:cover;display:block"></video>
+          <div class="play-badge">▶</div>
+        </div>
+        ${meta.caption || meta.date ? `<div class="media-info">
+          ${meta.caption ? `<div class="caption">${meta.caption}</div>` : ''}
+          ${meta.date ? `<div class="meta">📅 ${formatDate(meta.date)}</div>` : ''}
+        </div>` : ''}
+        <div class="card-actions">
+          <button class="card-btn" title="刪除" data-action="delete" data-id="${item.id}">✕</button>
+        </div>`;
+    } else {
+      const thumb = item.thumbnailLink
+        ? item.thumbnailLink.replace('=s220', '=s400')
+        : `https://lh3.googleusercontent.com/d/${item.id}=s400`;
+      card.innerHTML = `
+        <img src="${thumb}" alt="${meta.caption || item.name}" loading="lazy">
+        ${meta.caption || meta.date ? `<div class="media-info">
+          ${meta.caption ? `<div class="caption">${meta.caption}</div>` : ''}
+          ${meta.date ? `<div class="meta">📅 ${formatDate(meta.date)}</div>` : ''}
+        </div>` : ''}
+        <div class="card-actions">
+          <button class="card-btn" title="刪除" data-action="delete" data-id="${item.id}">✕</button>
+        </div>`;
+    }
+
+    card.addEventListener('click', (e) => {
+      if (e.target.dataset.action === 'delete') {
+        e.stopPropagation();
+        deleteFile(item.id, meta.caption || item.name);
+        return;
+      }
+      openLightbox(idx);
+    });
+    grid.appendChild(card);
+  });
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  UPLOAD                                                  ║
+// ╚══════════════════════════════════════════════════════════╝
+document.getElementById('fileInput').addEventListener('change', function() {
+  startUploadQueue(Array.from(this.files));
+  this.value = '';
+});
+
+// Drag & drop
+let dragCounter = 0;
+document.addEventListener('dragenter', e => { e.preventDefault(); dragCounter++; document.getElementById('dropOverlay').classList.add('show'); });
+document.addEventListener('dragleave', () => { dragCounter--; if (dragCounter <= 0) { dragCounter = 0; document.getElementById('dropOverlay').classList.remove('show'); } });
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault(); dragCounter = 0;
+  document.getElementById('dropOverlay').classList.remove('show');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+  if (files.length) startUploadQueue(files);
+});
+
+function startUploadQueue(files) {
+  if (!files.length) return;
+  pendingUploads = files;
+  pendingIdx = 0;
+  pendingAlbumId = currentAlbumId || rootFolderId;
+  showCaptionModal(files[0]);
+}
+
+function showCaptionModal(file) {
+  const isImage = file.type.startsWith('image/');
+  const preview = document.getElementById('captionPreview');
+  if (isImage) {
+    const r = new FileReader();
+    r.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+    r.readAsDataURL(file);
+  } else {
+    preview.src = ''; preview.style.display = 'none';
+  }
+  document.getElementById('captionInput').value = stripExt(file.name);
+  document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
+  document.getElementById('noteInput').value = '';
+  document.getElementById('captionOverlay').classList.add('open');
+}
+
+async function processCaption(skip) {
+  document.getElementById('captionOverlay').classList.remove('open');
+  const file = pendingUploads[pendingIdx];
+  const caption = skip ? '' : document.getElementById('captionInput').value.trim();
+  const date    = skip ? '' : document.getElementById('dateInput').value;
+  const note    = skip ? '' : document.getElementById('noteInput').value.trim();
+  const desc    = buildMeta(caption, date, note);
+
+  await uploadFile(file, pendingAlbumId, desc, pendingIdx, pendingUploads.length);
+
+  pendingIdx++;
+  if (pendingIdx < pendingUploads.length) {
+    showCaptionModal(pendingUploads[pendingIdx]);
+  } else {
+    showToast(`✨ 成功上傳 ${pendingUploads.length} 個檔案！`);
+    await renderView();
+  }
+}
+
+document.getElementById('captionSave').addEventListener('click', () => processCaption(false));
+document.getElementById('captionSkip').addEventListener('click', () => processCaption(true));
+
+async function uploadFile(file, folderId, description, idx, total) {
+  const prog = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  prog.classList.add('show');
+  label.textContent = `${idx + 1} / ${total}`;
+
+  const meta = { name: file.name, parents: [folderId], description };
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
+  form.append('file', file);
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+    xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+    xhr.upload.addEventListener('progress', e => {
+      if (e.lengthComputable) {
+        fill.style.width = ((e.loaded / e.total) * 100) + '%';
+      }
+    });
+    xhr.onload = () => {
+      if (idx + 1 >= total) { prog.classList.remove('show'); fill.style.width = '0%'; }
+      resolve(JSON.parse(xhr.responseText));
+    };
+    xhr.onerror = () => reject(new Error('Upload failed'));
+    xhr.send(form);
+  });
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  DELETE                                                  ║
+// ╚══════════════════════════════════════════════════════════╝
+async function deleteFile(id, name) {
+  if (!confirm(`確定要刪除「${name || '這個檔案'}」嗎？\n（檔案也會從 Google Drive 移到垃圾桶）`)) return;
+  await gFetch(`https://www.googleapis.com/drive/v3/files/${id}`, { method: 'DELETE' });
+  showToast('已刪除 🗑️');
+  await renderView();
+}
+
+async function deleteAlbum(id, name) {
+  if (!confirm(`確定要刪除相簿「${name}」嗎？\n（相簿內的檔案也會一起刪除）`)) return;
+  await gFetch(`https://www.googleapis.com/drive/v3/files/${id}`, { method: 'DELETE' });
+  if (currentAlbumId === id) currentAlbumId = null;
+  await loadAlbums();
+  await renderView();
+  showToast('相簿已刪除 🗑️');
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  NEW ALBUM                                               ║
+// ╚══════════════════════════════════════════════════════════╝
+document.getElementById('btnNewAlbum').addEventListener('click', () => {
+  document.getElementById('albumNameInput').value = '';
+  document.getElementById('newAlbumOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('albumNameInput').focus(), 100);
+});
+document.getElementById('albumCancel').addEventListener('click', () => document.getElementById('newAlbumOverlay').classList.remove('open'));
+document.getElementById('albumCreate').addEventListener('click', async () => {
+  const name = document.getElementById('albumNameInput').value.trim();
+  if (!name) return;
+  document.getElementById('newAlbumOverlay').classList.remove('open');
+  await ensureFolder(name, rootFolderId);
+  await loadAlbums();
+  showToast(`相簿「${name}」已建立 🌸`);
+});
+document.getElementById('albumNameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('albumCreate').click();
+});
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  LIGHTBOX                                                ║
+// ╚══════════════════════════════════════════════════════════╝
+function openLightbox(idx) {
+  lbIndex = idx;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('open');
+}
+function updateLightbox() {
+  const item = mediaItems[lbIndex];
+  const isVideo = item.mimeType.startsWith('video/');
+  const meta = parseMeta(item.description || '');
+  const img = document.getElementById('lbMedia');
+  const vid = document.getElementById('lbVideo');
+
+  if (isVideo) {
+    vid.src = `${item.webContentLink}&access_token=${accessToken}`;
+    vid.style.display = 'block'; img.style.display = 'none';
+  } else {
+    const src = item.thumbnailLink
+      ? item.thumbnailLink.replace('=s220', '=s1600')
+      : `https://lh3.googleusercontent.com/d/${item.id}=s1600`;
+    img.src = src; img.style.display = 'block'; vid.style.display = 'none';
+    vid.src = '';
+  }
+  document.getElementById('lbCaption').textContent = meta.caption || item.name;
+  document.getElementById('lbMeta').textContent = [
+    meta.date ? formatDate(meta.date) : '',
+    meta.note || ''
+  ].filter(Boolean).join(' · ');
+}
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lightbox').addEventListener('click', e => { if (e.target === document.getElementById('lightbox')) closeLightbox(); });
+document.getElementById('lbPrev').addEventListener('click', e => { e.stopPropagation(); lbIndex = (lbIndex - 1 + mediaItems.length) % mediaItems.length; updateLightbox(); });
+document.getElementById('lbNext').addEventListener('click', e => { e.stopPropagation(); lbIndex = (lbIndex + 1) % mediaItems.length; updateLightbox(); });
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lbVideo').src = '';
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') { lbIndex = (lbIndex - 1 + mediaItems.length) % mediaItems.length; updateLightbox(); }
+  if (e.key === 'ArrowRight') { lbIndex = (lbIndex + 1) % mediaItems.length; updateLightbox(); }
+});
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  MOBILE SIDEBAR                                          ║
+// ╚══════════════════════════════════════════════════════════╝
+document.getElementById('hamburger').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  HELPERS                                                 ║
+// ╚══════════════════════════════════════════════════════════╝
+function buildMeta(caption, date, note) {
+  return JSON.stringify({ caption, date, note });
+}
+function parseMeta(raw) {
+  try { return JSON.parse(raw); } catch { return { caption: raw, date: '', note: '' }; }
+}
+function formatDate(d) {
+  if (!d) return '';
+  const [y, m, day] = d.split('-');
+  return `${y}年${parseInt(m)}月${parseInt(day)}日`;
+}
+function stripExt(name) {
+  return name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Close overlays on background click
+['captionOverlay','newAlbumOverlay'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target.id === id) document.getElementById(id).classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
