@@ -179,10 +179,21 @@ body::before {                          /* grain */
   font-family:'Dancing Script',cursive; font-size:1.1rem;
   cursor:pointer; transition:all .2s;
   box-shadow:0 4px 16px rgba(201,123,123,.3);
-  position:relative;
+  justify-content:center;
+  touch-action:manipulation;
 }
 .btn-upload:hover { background:var(--rose); transform:translateY(-1px); }
-.btn-upload input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.file-input-hidden {
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
 
 /* ── Drop zone overlay ── */
 #dropOverlay {
@@ -391,9 +402,29 @@ body::before {                          /* grain */
   #sidebar { transform:translateX(-260px); width:260px; }
   #sidebar.open { transform:translateX(0); }
   #main { margin-left:0; }
-  .topbar { padding:16px 20px; }
-  .content { padding:20px 16px 80px; }
-  .media-grid { columns:2 150px; }
+  .topbar {
+    padding:14px 14px 12px;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+  }
+  .topbar > div { min-width:0; }
+  .topbar > div:nth-child(2) { flex:1 1 calc(100% - 48px); }
+  .topbar-title { font-size:1.35rem; }
+  .topbar-sub { font-size:.75rem; }
+  .btn-upload {
+    width:100%;
+    min-height:46px;
+    border-radius:16px;
+    font-size:1rem;
+  }
+  .content { padding:16px 12px 96px; }
+  .stats-row { gap:10px; margin-bottom:18px; }
+  .stat-chip { flex:1 1 calc(50% - 10px); padding:10px 14px; }
+  .media-grid { columns:2 140px; column-gap:10px; }
+  .media-card { margin-bottom:10px; border-radius:14px; }
+  .modal-box { padding:24px 18px; border-radius:18px; }
+  .drop-box { padding:34px 22px; font-size:1.35rem; width:min(92vw,420px); }
   #progressBar { left:0; }
   .hamburger { display:flex !important; }
 }
@@ -462,10 +493,10 @@ body::before {                          /* grain */
         <div class="topbar-title" id="topbarTitle">所有回憶</div>
         <div class="topbar-sub" id="topbarSub"></div>
       </div>
-      <button class="btn-upload" id="btnUpload">
+      <button class="btn-upload" id="btnUpload" type="button">
         🌸 上傳
-        <input type="file" id="fileInput" accept="image/*,video/*" multiple>
       </button>
+      <input class="file-input-hidden" type="file" id="fileInput" accept="image/*,video/*" multiple>
     </div>
 
     <div class="content">
@@ -552,6 +583,7 @@ const CLIENT_ID   = '147121891766-afmbrh8ms0p7crn5m901sdu9m650e3r9.apps.googleus
 const SCOPES      = 'https://www.googleapis.com/auth/drive.file';
 const ROOT_FOLDER = 'OurMemories';             // Drive 根目錄名稱（可自訂）
 const APP_MIME    = 'application/vnd.google-apps.folder';
+const AUTH_STORAGE_KEY = 'memories_google_auth';
 
 // ── hide config banner if client id is set ──
 if (CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID') {
@@ -600,15 +632,25 @@ window.onload = () => {
   });
 };
 
+window.addEventListener('load', () => {
+  if (localStorage.getItem(AUTH_STORAGE_KEY) === '1' && CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID') {
+    setTimeout(() => {
+      if (!accessToken && tokenClient) tokenClient.requestAccessToken({ prompt: '' });
+    }, 0);
+  }
+});
+
 document.getElementById('btnSignIn').addEventListener('click', () => {
   if (CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
     showToast('請先設定 Google Client ID ⚙️');
     return;
   }
+  localStorage.setItem(AUTH_STORAGE_KEY, '1');
   tokenClient.requestAccessToken({ prompt: 'consent' });
 });
 
 document.getElementById('btnSignOut').addEventListener('click', () => {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
   google.accounts.oauth2.revoke(accessToken, () => {
     accessToken = null;
     document.getElementById('app').style.display = 'none';
@@ -629,6 +671,7 @@ async function initApp() {
   // Show app
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  localStorage.setItem(AUTH_STORAGE_KEY, '1');
 
   // Ensure root folder
   rootFolderId = await ensureFolder(ROOT_FOLDER, 'root');
