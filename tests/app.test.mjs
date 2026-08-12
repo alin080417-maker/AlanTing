@@ -41,7 +41,10 @@ test('Drive query helpers escape IDs and select direct children', () => {
   assert.match(buildFolderQuery(id), /mimeType = 'application\/vnd\.google-apps\.folder'/);
   assert.match(buildFolderQuery(id), /'root\\\\folder\\'1' in parents/);
   assert.match(buildMediaQuery(id), /'root\\\\folder\\'1' in parents/);
-  assert.match(buildMediaQuery(id), /trashed = false/);
+  const mediaQuery = buildMediaQuery(id);
+  assert.ok(mediaQuery.includes("mimeType contains 'image/'"));
+  assert.ok(mediaQuery.includes("mimeType contains 'video/'"));
+  assert.match(mediaQuery, /trashed = false/);
 });
 
 test('media validation accepts images and videos only', () => {

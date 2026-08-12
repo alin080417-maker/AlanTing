@@ -48,7 +48,7 @@ export function buildFolderQuery(folderId) {
 }
 
 export function buildMediaQuery(folderId) {
-  return `${parentPredicate(folderId)} and mimeType != '${APP_MIME}' and trashed = false`;
+  return `${parentPredicate(folderId)} and (mimeType contains 'image/' or mimeType contains 'video/') and trashed = false`;
 }
 
 export function isSupportedMediaFile(file) {
