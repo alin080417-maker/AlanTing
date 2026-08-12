@@ -137,3 +137,21 @@ test('browser source avoids unsafe HTML injection and permanent deletion', async
   assert.doesNotMatch(source, /\.innerHTML\s*=/);
   assert.doesNotMatch(source, /files\.delete/);
 });
+
+test('README documents the shared deployment contract', async () => {
+  const readme = await readFile(join(dirname(fileURLToPath(import.meta.url)), '..', 'README.md'), 'utf8');
+  for (const phrase of [
+    'https://alin080417-maker.github.io/AlanTing/',
+    'https://alin080417-maker.github.io',
+    'Google Picker API',
+    'Google Drive API',
+    'HTTP referrer',
+    'GOOGLE_CLOUD_PROJECT_NUMBER',
+    '分享',
+    '第一次',
+    'Client Secret',
+    'npm test',
+  ]) {
+    assert.match(readme, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `README missing: ${phrase}`);
+  }
+});
