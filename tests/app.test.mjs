@@ -138,6 +138,11 @@ test('browser source avoids unsafe HTML injection and permanent deletion', async
   assert.doesNotMatch(source, /files\.delete/);
 });
 
+test('drive-only OAuth sign-in does not call an unrequested userinfo scope', async () => {
+  const source = await readFile(join(dirname(fileURLToPath(import.meta.url)), '..', 'app.js'), 'utf8');
+  assert.doesNotMatch(source, /oauth2\/v2\/userinfo/);
+});
+
 test('README documents the shared deployment contract', async () => {
   const readme = await readFile(join(dirname(fileURLToPath(import.meta.url)), '..', 'README.md'), 'utf8');
   for (const phrase of [

@@ -640,13 +640,7 @@ if (isBrowser) {
     setText('loginMessage', '正在連線到 Google⋯');
     try {
       await requestAccessToken('consent');
-      const user = await gFetch('https://www.googleapis.com/oauth2/v2/userinfo');
-      setText('userName', user.name || user.email || '已登入');
-      const avatar = $('userAvatar');
-      if (avatar) {
-        avatar.src = user.picture || '';
-        avatar.alt = user.name || '目前使用者';
-      }
+      setText('userName', '已登入 Google');
       showApp();
       const stored = readFolderSettings(window.localStorage);
       if (stored) {
