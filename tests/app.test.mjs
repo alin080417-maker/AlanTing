@@ -22,6 +22,8 @@ import {
   writeFolderSettings,
   clearFolderSettings,
   parseUploadResult,
+  buildDriveListUrl,
+  mergeDrivePage,
 } from '../app.js';
 
 test('buildMeta and parseMeta preserve caption, date, and note', () => {
@@ -117,4 +119,21 @@ test('index shell exposes shared album controls and module wiring', async () => 
   }
   assert.match(html, /<script[^>]+type=["']module["'][^>]+src=["']app\.js["']/);
   assert.doesNotMatch(html, /YOUR_GOOGLE_CLIENT_ID/);
+});
+
+test('Drive list URL opts into shared-drive items and pagination merges pages', () => {
+  const url = new URL(buildDriveListUrl("folder/1'", 'q=trashed%3Dfalse'));
+  assert.equal(url.searchParams.get('includeItemsFromAllDrives'), 'true');
+  assert.equal(url.searchParams.get('supportsAllDrives'), 'true');
+  assert.equal(url.searchParams.get('pageSize'), '1000');
+  assert.deepEqual(mergeDrivePage({ files: [{ id: 'a' }], nextPageToken: 'next' }, [{ id: 'old' }]), {
+    files: [{ id: 'old' }, { id: 'a' }],
+    nextPageToken: 'next',
+  });
+});
+
+test('browser source avoids unsafe HTML injection and permanent deletion', async () => {
+  const source = await readFile(join(dirname(fileURLToPath(import.meta.url)), '..', 'app.js'), 'utf8');
+  assert.doesNotMatch(source, /\.innerHTML\s*=/);
+  assert.doesNotMatch(source, /files\.delete/);
 });
