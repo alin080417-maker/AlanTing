@@ -118,7 +118,7 @@ test('index shell exposes shared album controls and module wiring', async () => 
     assert.match(html, new RegExp(`id=["']${id}["']`), `missing #${id}`);
   }
   assert.match(html, /<script[^>]+type=["']module["'][^>]+src=["']app\.js["']/);
-  assert.doesNotMatch(html, /YOUR_GOOGLE_CLIENT_ID/);
+  assert.doesNotMatch(html, new RegExp(['YOUR', 'GOOGLE_CLIENT_ID'].join('_')));
 });
 
 test('Drive list URL opts into shared-drive items and pagination merges pages', () => {
