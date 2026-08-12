@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 import {
   APP_MIME,
@@ -94,4 +97,24 @@ test('upload result rejects every non-2xx response', () => {
   assert.deepEqual(parseUploadResult(201, '{"id":"file-1"}'), { id: 'file-1' });
   assert.throws(() => parseUploadResult(400, '{"error":"bad"}'), /Upload failed/);
   assert.equal(parseUploadResult(204, ''), null);
+});
+
+test('index shell exposes shared album controls and module wiring', async () => {
+  const testDir = dirname(fileURLToPath(import.meta.url));
+  const html = await readFile(join(testDir, '..', 'index.html'), 'utf8');
+  for (const id of [
+    'loginScreen', 'btnSignIn', 'loginMessage', 'app', 'sidebar', 'albumsList',
+    'btnNewAlbum', 'btnChooseFolder', 'btnResetFolder', 'folderSetup',
+    'folderSetupMessage', 'folderName', 'topbarTitle', 'topbarSub', 'btnUpload',
+    'fileInput', 'mediaGrid', 'statsRow', 'progressBar', 'progressFill',
+    'progressLabel', 'captionOverlay', 'captionPreview', 'captionInput',
+    'dateInput', 'noteInput', 'captionSkip', 'captionSave', 'newAlbumOverlay',
+    'albumNameInput', 'albumCancel', 'albumCreate', 'lightbox', 'lbMedia',
+    'lbVideo', 'lbCaption', 'lbMeta', 'lbClose', 'lbPrev', 'lbNext', 'toast',
+    'hamburger',
+  ]) {
+    assert.match(html, new RegExp(`id=["']${id}["']`), `missing #${id}`);
+  }
+  assert.match(html, /<script[^>]+type=["']module["'][^>]+src=["']app\.js["']/);
+  assert.doesNotMatch(html, /YOUR_GOOGLE_CLIENT_ID/);
 });
