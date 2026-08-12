@@ -2,8 +2,8 @@ export const APP_MIME = 'application/vnd.google-apps.folder';
 export const CONFIG_STORAGE_KEY = 'alanting.shared-folder.v1';
 
 const CLIENT_ID = '147121891766-afmbrh8ms0p7crn5m901sdu9m650e3r9.apps.googleusercontent.com';
-const PICKER_API_KEY = '';
-const GOOGLE_CLOUD_PROJECT_NUMBER = '';
+const PICKER_API_KEY = 'AIzaSyAslGPXZN7b779MYEOFDuLkranYNKXtc3s';
+const GOOGLE_CLOUD_PROJECT_NUMBER = '147121891766';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILES_URL = 'https://www.googleapis.com/drive/v3/files';
 
@@ -995,4 +995,3 @@ if (isBrowser) {
     initialize();
   }
 }
-
