@@ -73,6 +73,11 @@ export function classifyDriveError(errorOrStatus) {
   return 'client-error';
 }
 
+export function shouldDiscardSavedFolder(errorOrStatus) {
+  const kind = classifyDriveError(errorOrStatus);
+  return kind === 'unauthorized' || kind === 'forbidden' || kind === 'not-found';
+}
+
 export function parseJsonBody(body) {
   if (body === null || body === undefined || body === '') return null;
   if (typeof body !== 'string') return body;
@@ -648,7 +653,7 @@ if (isBrowser) {
           await loadSelectedFolder(stored.folderId, stored.name);
           return;
         } catch (error) {
-          if (classifyDriveError(error) === 'unauthorized') throw error;
+          if (!shouldDiscardSavedFolder(error)) throw error;
           clearFolderSettings(window.localStorage);
           state.selectedFolder = null;
         }

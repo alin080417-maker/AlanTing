@@ -16,6 +16,7 @@ import {
   buildMediaQuery,
   isSupportedMediaFile,
   classifyDriveError,
+  shouldDiscardSavedFolder,
   parseJsonBody,
   createMediaUrl,
   readFolderSettings,
@@ -65,6 +66,13 @@ test('Drive errors classify empty, auth, permission, missing, and server respons
   assert.equal(classifyDriveError(403), 'forbidden');
   assert.equal(classifyDriveError(404), 'not-found');
   assert.equal(classifyDriveError(503), 'server-error');
+});
+
+test('a saved folder is discarded when a new login cannot access it', () => {
+  assert.equal(shouldDiscardSavedFolder(401), true);
+  assert.equal(shouldDiscardSavedFolder(403), true);
+  assert.equal(shouldDiscardSavedFolder(404), true);
+  assert.equal(shouldDiscardSavedFolder(503), false);
 });
 
 test('response parsing handles JSON and empty bodies', () => {
